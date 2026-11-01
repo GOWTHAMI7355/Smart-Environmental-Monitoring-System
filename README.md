@@ -60,5 +60,3 @@ Simulated DHT22 Sensor → MQTT Broker → Node-RED Processing → Dashboard and
 ## Project Status
 
 Completed – Simulation-based implementation.
-
-Completed – Simulation-based implementation.
