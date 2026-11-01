@@ -1,0 +1,619 @@
+[
+  {
+    "id": "tab1",
+    "type": "tab",
+    "label": "Smart Environmental Monitoring",
+    "disabled": false,
+    "info": "Simulated ESP32/DHT22 environmental monitoring using MQTT and FlowFuse Dashboard 2.0."
+  },
+  {
+    "id": "broker1",
+    "type": "mqtt-broker",
+    "name": "Local Mosquitto",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "nodered-env-monitor",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "base1",
+    "type": "ui-base",
+    "name": "Environmental Monitor",
+    "path": "/dashboard",
+    "includeClientData": true,
+    "acceptsClientConfig": [
+      "ui-notification",
+      "ui-control"
+    ],
+    "showPathInSidebar": false,
+    "navigationStyle": "default",
+    "title": "Environmental Monitoring",
+    "showThemeToggle": true,
+    "\u8272": "#0094CE"
+  },
+  {
+    "id": "theme1",
+    "type": "ui-theme",
+    "name": "Default Theme",
+    "colors": {
+      "surface": "#ffffff",
+      "primary": "#1565c0",
+      "bgPage": "#f4f6f8",
+      "groupBg": "#ffffff",
+      "groupOutline": "#d9e0e7"
+    },
+    "sizes": {
+      "density": "comfortable",
+      "pagePadding": "12px",
+      "groupGap": "12px",
+      "groupBorderRadius": "4px",
+      "widgetGap": "12px"
+    }
+  },
+  {
+    "id": "page1",
+    "type": "ui-page",
+    "name": "Live Monitor",
+    "ui": "base1",
+    "path": "/live",
+    "icon": "dashboard",
+    "layout": "grid",
+    "theme": "theme1",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      }
+    ],
+    "order": 1,
+    "className": "",
+    "visible": "true",
+    "disabled": "false"
+  },
+  {
+    "id": "group1",
+    "type": "ui-group",
+    "name": "Live Sensor Readings",
+    "page": "page1",
+    "width": "6",
+    "height": "1",
+    "order": 1,
+    "showTitle": true,
+    "className": ""
+  },
+  {
+    "id": "group2",
+    "type": "ui-group",
+    "name": "Device Controls and Status",
+    "page": "page1",
+    "width": "6",
+    "height": "1",
+    "order": 2,
+    "showTitle": true,
+    "className": ""
+  },
+  {
+    "id": "group3",
+    "type": "ui-group",
+    "name": "Alerts and System Log",
+    "page": "page1",
+    "width": "6",
+    "height": "1",
+    "order": 3,
+    "showTitle": true,
+    "className": ""
+  },
+  {
+    "id": "inject1",
+    "type": "inject",
+    "z": "tab1",
+    "name": "Simulated ESP32 (every 2 sec)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 170,
+    "y": 100,
+    "wires": [
+      [
+        "sim1"
+      ]
+    ]
+  },
+  {
+    "id": "sim1",
+    "type": "function",
+    "z": "tab1",
+    "name": "Generate DHT22 readings",
+    "func": "// Simulated DHT22 readings, representing an ESP32 publishing sensor data.\\nlet t = 24 + Math.random()*12;\\nlet h = 45 + Math.random()*35;\\nmsg.topic = 'environment/sensor';\\nmsg.payload = JSON.stringify({temperature:Number(t.toFixed(1)), humidity:Number(h.toFixed(1)), timestamp:new Date().toISOString(), source:'SIMULATED_ESP32_DHT22'});\\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 100,
+    "wires": [
+      [
+        "mqtt_sensor_out"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt_sensor_out",
+    "type": "mqtt out",
+    "z": "tab1",
+    "name": "Publish sensor data",
+    "topic": "environment/sensor",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker1",
+    "x": 680,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "mqtt_sensor_in",
+    "type": "mqtt in",
+    "z": "tab1",
+    "name": "Receive sensor data",
+    "topic": "environment/sensor",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 170,
+    "y": 220,
+    "wires": [
+      [
+        "controller1"
+      ]
+    ]
+  },
+  {
+    "id": "mode_switch",
+    "type": "ui-switch",
+    "z": "tab1",
+    "name": "Automatic / Manual mode",
+    "label": "Automatic mode (ON = automatic)",
+    "group": "group2",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "passthru": true,
+    "decouple": "false",
+    "topic": "mode",
+    "topicType": "str",
+    "style": "",
+    "className": "",
+    "layout": "row-spread",
+    "clickableArea": "switch",
+    "onvalue": "true",
+    "onvalueType": "bool",
+    "offvalue": "false",
+    "offvalueType": "bool",
+    "x": 190,
+    "y": 340,
+    "wires": [
+      [
+        "controller1"
+      ]
+    ]
+  },
+  {
+    "id": "fan_switch",
+    "type": "ui-switch",
+    "z": "tab1",
+    "name": "Manual fan control",
+    "label": "Fan manual ON/OFF",
+    "group": "group2",
+    "order": 2,
+    "width": "3",
+    "height": "1",
+    "passthru": true,
+    "decouple": "false",
+    "topic": "fan_manual",
+    "topicType": "str",
+    "style": "",
+    "className": "",
+    "layout": "row-spread",
+    "clickableArea": "switch",
+    "onvalue": "true",
+    "onvalueType": "bool",
+    "offvalue": "false",
+    "offvalueType": "bool",
+    "x": 180,
+    "y": 400,
+    "wires": [
+      [
+        "controller1"
+      ]
+    ]
+  },
+  {
+    "id": "led_switch",
+    "type": "ui-switch",
+    "z": "tab1",
+    "name": "Manual LED control",
+    "label": "LED manual ON/OFF",
+    "group": "group2",
+    "order": 3,
+    "width": "3",
+    "height": "1",
+    "passthru": true,
+    "decouple": "false",
+    "topic": "led_manual",
+    "topicType": "str",
+    "style": "",
+    "className": "",
+    "layout": "row-spread",
+    "clickableArea": "switch",
+    "onvalue": "true",
+    "onvalueType": "bool",
+    "offvalue": "false",
+    "offvalueType": "bool",
+    "x": 180,
+    "y": 460,
+    "wires": [
+      [
+        "controller1"
+      ]
+    ]
+  },
+  {
+    "id": "controller1",
+    "type": "function",
+    "z": "tab1",
+    "name": "Automation + manual controller",
+    "func": "// Input topics: environment/sensor, mode, fan_manual, led_manual\\nlet s = flow.get('sensor') || {temperature:25,humidity:50};\\nlet mode = flow.get('autoMode');\\nif (mode === undefined) mode = true;\\nlet fan = flow.get('fanState') || false;\\nlet led = flow.get('ledState') || false;\\nlet alert = 'Conditions normal';\\nif (msg.topic === 'environment/sensor') {\\n  let d = msg.payload; if (typeof d === 'string') { try { d=JSON.parse(d); } catch(e) { return null; } }\\n  s = d; flow.set('sensor',s);\\n} else if (msg.topic === 'mode') { mode = (msg.payload === true || msg.payload === 'true'); flow.set('autoMode',mode); }\\nelse if (msg.topic === 'fan_manual' && !mode) { fan = !!msg.payload; }\\nelse if (msg.topic === 'led_manual' && !mode) { led = !!msg.payload; }\\nif (mode) { fan = Number(s.temperature) > 30; led = Number(s.humidity) > 70; }\\nflow.set('fanState',fan); flow.set('ledState',led);\\nif (Number(s.temperature)>30) alert='HIGH TEMPERATURE: '+s.temperature+' \u00b0C';\\nif (Number(s.humidity)>70) alert += (alert==='Conditions normal'?'':' | ')+'HIGH HUMIDITY: '+s.humidity+' %';\\nif (alert==='Conditions normal') alert='Conditions normal';\\nlet a=[]; a[0]={payload:Number(s.temperature),timestamp:Date.now()}; a[1]={payload:Number(s.humidity),timestamp:Date.now()}; a[2]={payload:fan?'ON':'OFF'}; a[3]={payload:led?'ON':'OFF'}; a[4]={payload:alert};\\nif (msg.topic==='environment/sensor') a[5]={payload:new Date().toISOString()+','+s.temperature+','+s.humidity+','+(fan?'ON':'OFF')+','+(led?'ON':'OFF')+'\\\\n'};\\na[6]={topic:'environment/fan',payload:fan?'ON':'OFF'}; a[7]={topic:'environment/led',payload:led?'ON':'OFF'};\\nreturn a;",
+    "outputs": 8,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "flow.set('autoMode',true);",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 300,
+    "wires": [
+      [
+        "temp_gauge",
+        "temp_chart"
+      ],
+      [
+        "hum_gauge",
+        "hum_chart"
+      ],
+      [
+        "fan_status"
+      ],
+      [
+        "led_status"
+      ],
+      [
+        "alert_text"
+      ],
+      [
+        "csv_file"
+      ],
+      [
+        "mqtt_fan_out"
+      ],
+      [
+        "mqtt_led_out"
+      ]
+    ]
+  },
+  {
+    "id": "temp_gauge",
+    "type": "ui-gauge",
+    "z": "tab1",
+    "name": "Temperature gauge",
+    "group": "group1",
+    "order": 1,
+    "width": "3",
+    "height": "3",
+    "gtype": "gauge-half",
+    "gstyle": "needle",
+    "title": "Temperature",
+    "units": "\u00b0C",
+    "icon": "thermometer",
+    "prefix": "",
+    "suffix": "\u00b0C",
+    "segments": [
+      {
+        "from": "0",
+        "color": "#2196f3"
+      },
+      {
+        "from": "30",
+        "color": "#ff9800"
+      },
+      {
+        "from": "35",
+        "color": "#f44336"
+      }
+    ],
+    "min": 0,
+    "max": "50",
+    "size": "6",
+    "className": "",
+    "x": 780,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "hum_gauge",
+    "type": "ui-gauge",
+    "z": "tab1",
+    "name": "Humidity gauge",
+    "group": "group1",
+    "order": 2,
+    "width": "3",
+    "height": "3",
+    "gtype": "gauge-half",
+    "gstyle": "needle",
+    "title": "Humidity",
+    "units": "%",
+    "icon": "water-percent",
+    "prefix": "",
+    "suffix": "%",
+    "segments": [
+      {
+        "from": "0",
+        "color": "#2196f3"
+      },
+      {
+        "from": "70",
+        "color": "#ff9800"
+      },
+      {
+        "from": "85",
+        "color": "#f44336"
+      }
+    ],
+    "min": 0,
+    "max": "100",
+    "size": "6",
+    "className": "",
+    "x": 780,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "temp_chart",
+    "type": "ui-chart",
+    "z": "tab1",
+    "name": "Temperature history",
+    "group": "group1",
+    "order": 3,
+    "width": "6",
+    "height": "4",
+    "label": "Temperature history",
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "Time",
+    "xAxisProperty": "timestamp",
+    "xAxisPropertyType": "msg",
+    "xAxisType": "time",
+    "yAxisLabel": "Temperature (\u00b0C)",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "0",
+    "ymax": "50",
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "circle",
+    "pointRadius": 3,
+    "showLegend": false,
+    "removeOlder": "1",
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "",
+    "colors": [
+      "#1565c0"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "x": 790,
+    "y": 340,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "hum_chart",
+    "type": "ui-chart",
+    "z": "tab1",
+    "name": "Humidity history",
+    "group": "group1",
+    "order": 4,
+    "width": "6",
+    "height": "4",
+    "label": "Humidity history",
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "Time",
+    "xAxisProperty": "timestamp",
+    "xAxisPropertyType": "msg",
+    "xAxisType": "time",
+    "yAxisLabel": "Humidity (%)",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "0",
+    "ymax": "100",
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "circle",
+    "pointRadius": 3,
+    "showLegend": false,
+    "removeOlder": "1",
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "",
+    "colors": [
+      "#2e7d32"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "x": 790,
+    "y": 400,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "fan_status",
+    "type": "ui-text",
+    "z": "tab1",
+    "group": "group2",
+    "order": 4,
+    "width": "3",
+    "height": "1",
+    "name": "Fan status",
+    "label": "Fan status",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "",
+    "className": "",
+    "x": 780,
+    "y": 460,
+    "wires": []
+  },
+  {
+    "id": "led_status",
+    "type": "ui-text",
+    "z": "tab1",
+    "group": "group2",
+    "order": 5,
+    "width": "3",
+    "height": "1",
+    "name": "LED status",
+    "label": "LED status",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "",
+    "className": "",
+    "x": 780,
+    "y": 500,
+    "wires": []
+  },
+  {
+    "id": "alert_text",
+    "type": "ui-text",
+    "z": "tab1",
+    "group": "group3",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "name": "Alert display",
+    "label": "System alert",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "",
+    "className": "",
+    "x": 780,
+    "y": 540,
+    "wires": []
+  },
+  {
+    "id": "csv_file",
+    "type": "file",
+    "z": "tab1",
+    "name": "Log readings to CSV",
+    "filename": "environment_log.csv",
+    "filenameType": "str",
+    "appendNewline": false,
+    "createDir": true,
+    "overwriteFile": "false",
+    "encoding": "utf8",
+    "x": 780,
+    "y": 600,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "mqtt_fan_out",
+    "type": "mqtt out",
+    "z": "tab1",
+    "name": "Publish fan command",
+    "topic": "",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker1",
+    "x": 790,
+    "y": 660,
+    "wires": []
+  },
+  {
+    "id": "mqtt_led_out",
+    "type": "mqtt out",
+    "z": "tab1",
+    "name": "Publish LED command",
+    "topic": "",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker1",
+    "x": 790,
+    "y": 720,
+    "wires": []
+  }
+]
